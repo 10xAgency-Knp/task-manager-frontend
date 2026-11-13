@@ -1,0 +1,76 @@
+{
+  "flows": {
+    "Flow 1": {
+      "status": "PASS",
+      "details": [
+        "Clean login verified",
+        "Admin authenticated",
+        "Redirected to #/dashboard"
+      ]
+    },
+    "Flow 2": {
+      "status": "PASS",
+      "details": [
+        "KPI cards: 5",
+        "Focus list: true",
+        "Deadlines: true",
+        "Charts: true"
+      ]
+    },
+    "Flow 3": {
+      "status": "PASS",
+      "details": [
+        "Created task: TK-07",
+        "Subtask checked: true",
+        "Comment added: true"
+      ]
+    },
+    "Flow 4": {
+      "status": "PASS",
+      "details": [
+        "Project cards: 3",
+        "P-01 detail loaded: true",
+        "Deals pipeline: 8 stages"
+      ]
+    },
+    "Flow 5": {
+      "status": "PASS",
+      "details": [
+        "Members rendered: 3",
+        "Custom dept tested: true",
+        "Reports loaded: true",
+        "Settings push card: true"
+      ]
+    },
+    "Flow 6": {
+      "status": "PASS",
+      "details": [
+        "Permissions checkboxes: 64",
+        "Audit rows: 20",
+        "Recycle bin inspected: true",
+        "Password resets loaded: true"
+      ]
+    },
+    "Flow 7": {
+      "status": "PASS",
+      "details": [
+        "Bell icon verified: true",
+        "Notifications view loaded: true",
+        "Mark all read executed: false"
+      ]
+    },
+    "Flow 8": {
+      "status": "PASS",
+      "details": [
+        "Cleaned up task: TK-07",
+        "Signed out: true",
+        "Redirected to #/login: true"
+      ]
+    }
+  },
+  "consoleErrors": [],
+  "consoleWarnings": [],
+  "pageErrors": [],
+  "networkFailures": [],
+  "issuesFound": []
+}
