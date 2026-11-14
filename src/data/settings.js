@@ -82,7 +82,7 @@ export const LIMITS = {
   user_name: [2, 80], designation: [0, 60], dept: [2, 40], city: [0, 60]
 };
 
-export const EMAIL_DOMAINS = ["gmail.com", "10xagency.in", "10xagency.co.in", "the10xagency.in", "fivermail.com"];
+export const EMAIL_DOMAINS = ["gmail.com", "10xagency.in", "10xagency.co.in", "the10xagency.in", "fivermail.com", "clicxormedia.com", "clicxormedia.in"];
 
 export const SESSION = { idleMinutes: 60, absoluteHours: 12 };
 export const OWN_FILE_DELETE_HOURS = 24;

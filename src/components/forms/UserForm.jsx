@@ -433,7 +433,7 @@ function UserForm({ userToEdit, u, isEditingSelf, self, isAdminSection, adminSec
             data-lpignore="true"
             maxLength={160}
             value={formData.email}
-            placeholder="name@the10xagency.in"
+            placeholder="name@clicxormedia.com"
             onChange={event => updateFormField("email", event.target.value)}
             onBlur={() =>
               setFormErrors(previous => ({

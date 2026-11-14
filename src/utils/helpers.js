@@ -787,7 +787,7 @@ export function validateEmailAddress(email) {
   const emailDomain = cleanEmail.slice(cleanEmail.lastIndexOf("@") + 1);
   const allowedDomains = (appStore.database.emailDomains && appStore.database.emailDomains.length)
     ? appStore.database.emailDomains
-    : ["gmail.com", "10xagency.in", "10xagency.co.in", "the10xagency.in", "fivermail.com"];
+    : ["gmail.com", "10xagency.in", "10xagency.co.in", "the10xagency.in", "fivermail.com", "clicxormedia.com", "clicxormedia.in"];
 
   if (!allowedDomains.includes(emailDomain)) {
     return "Only these email domains are allowed: " + allowedDomains.map(d => "@" + d).join(", ") + ".";
