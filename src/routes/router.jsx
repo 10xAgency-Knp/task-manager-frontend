@@ -94,7 +94,7 @@ export const router = createBrowserRouter(
             },
             {
               path: "login",
-              element: <Navigate to="/dashboard" replace />
+              element: <DefaultIndexRedirect />
             },
             {
               path: "admin",

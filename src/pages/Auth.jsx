@@ -19,7 +19,7 @@ import { validatePasswordStrength } from "../utils/helpers.js";
 import { startPoll, stopPoll, applyLoad } from "../services/sync.js";
 import { PUSH } from "../services/push.js";
 import { confirmBox, closeModal } from "../components/Modal.jsx";
-import { getFirstAllowedView, navigateToView } from "../routes/navigation.js";
+import { getFirstAllowedView, navigateToView, navigate } from "../routes/navigation.js";
 
 // ============================================================================
 // STARTUP & SESSION LIFECYCLE
@@ -101,7 +101,7 @@ async function enterApp() {
     head: null
   });
 
-  navigateToView(targetView);
+  navigateToView(targetView, null, { replace: true });
 
   startPoll();
 }
@@ -132,13 +132,7 @@ export async function signOut() {
     modalStack: []
   });
 
-  if (typeof window !== "undefined") {
-    if (window.history && window.history.pushState) {
-      window.history.pushState(null, "", "/login");
-    } else if (window.location) {
-      window.location.href = "/login";
-    }
-  }
+  navigate("/login", { replace: true });
 }
 
 /**

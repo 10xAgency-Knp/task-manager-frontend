@@ -234,9 +234,15 @@ export function setNavigator(navigateFunction) {
   routerNavigator = navigateFunction;
 }
 
-function navigate(path, options) {
+export function navigate(path, options) {
   if (routerNavigator) {
     routerNavigator(path, options);
+  } else if (typeof window !== "undefined" && window.location) {
+    if (options?.replace && window.history?.replaceState) {
+      window.history.replaceState(null, "", path);
+    } else {
+      window.location.href = path;
+    }
   }
 }
 
@@ -251,14 +257,21 @@ export function closeSidebarMobile() {
  * Navigates to a top-level view and resets task filters when switching views.
  * @param {string} viewKey
  * @param {string} [initialTab]
+ * @param {Object} [options]
  */
-export function navigateToView(viewKey, initialTab) {
+export function navigateToView(viewKey, initialTab, options = {}) {
   if (!isViewAllowed(viewKey)) {
     showToast("You do not have access to that page.", "err");
     return;
   }
 
-  const isViewChanging = viewKey !== appStore.currentView || Boolean(appStore.focusedEntity);
+  const targetPath = pathForView(viewKey);
+  const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+  const isPathDifferent = currentPath !== targetPath;
+  const isViewChanging =
+    viewKey !== appStore.currentView ||
+    Boolean(appStore.focusedEntity) ||
+    isPathDifferent;
 
   if (isViewChanging) {
     Object.assign(appStore.taskFilters, {
@@ -277,12 +290,12 @@ export function navigateToView(viewKey, initialTab) {
 
   closeSidebarMobile();
 
-  if (!isViewChanging) {
+  if (!isViewChanging && !isPathDifferent) {
     emitStoreChange();
     return;
   }
 
-  navigate(pathForView(viewKey));
+  navigate(targetPath, options);
 }
 
 /**
