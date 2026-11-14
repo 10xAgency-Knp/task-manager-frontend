@@ -13,7 +13,7 @@
  * 9. User logs in with brand new password -> Verifies clean login & old password rejection
  */
 
-const API_BASE = "http://localhost:8000/api";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 function assert(condition, message) {
   if (!condition) {

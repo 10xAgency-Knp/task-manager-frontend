@@ -38,7 +38,7 @@ function resolveApiBaseUrl() {
       }
     }
   }
-  return envUrl || "http://localhost:8000/api";
+  return envUrl || "https://api-task-manager.clicxormedia.in/api";
 }
 
 const API_BASE_URL = resolveApiBaseUrl();
