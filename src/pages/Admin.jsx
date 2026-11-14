@@ -824,6 +824,176 @@ function PermissionEditorModal({permissionsData, targetUser, reloadPermissions})
 // ACTIVITY / AUDIT LOG
 // ============================================================================
 
+const AUDIT_FIELD_LABELS = {
+    // Tasks
+    tsk_id: "Task ID",
+    tsk_code: "Task Code",
+    tsk_title: "Task Title",
+    tsk_description: "Description",
+    tsk_status: "Status",
+    tsk_priority: "Priority",
+    tsk_category: "Category",
+    tsk_custom_remark: "Custom Remark",
+    tsk_pro_id: "Project",
+    tsk_start_date: "Start Date",
+    tsk_due_date: "Due Date",
+    tsk_est_hours: "Estimated Hours",
+    tsk_spent_hours: "Spent Hours",
+    tsk_tags: "Tags",
+    tsk_progress: "Progress",
+    tsk_assigned_by: "Assigned By",
+    tsk_completed_at: "Completed At",
+    assignees: "Assignees",
+    checklist: "Checklist",
+    exist_checklist: "Existing Checklist",
+
+    // Projects
+    pro_id: "Project ID",
+    pro_code: "Project Code",
+    pro_name: "Project Name",
+    pro_description: "Description",
+    pro_status: "Status",
+    pro_progress: "Progress",
+    pro_start_date: "Start Date",
+    pro_due_date: "Due Date",
+    pro_budget: "Budget",
+    pro_manager: "Project Manager",
+    members: "Team Members",
+
+    // Users
+    usr_id: "User ID",
+    usr_name: "Full Name",
+    name: "Full Name",
+    usr_email: "Email",
+    email: "Email",
+    usr_role: "Role",
+    role: "Role",
+    usr_phone: "Phone",
+    phone: "Phone",
+    usr_dept: "Department",
+    dept: "Department",
+    usr_department: "Department",
+    department: "Department",
+    usr_custom_dept: "Custom Department",
+    custom_dept: "Custom Department",
+    usr_designation: "Designation",
+    designation: "Designation",
+    usr_city: "City",
+    city: "City",
+    usr_status: "Status",
+    status: "Status",
+    usr_reporting_to: "Reports To",
+    reportsToId: "Reports To",
+    usr_is_super_admin: "Super Admin",
+    is_super_admin: "Super Admin",
+    usr_avatar: "Avatar",
+    joined: "Joined Date",
+
+    // Deals / Sales Pipeline
+    ssp_id: "Deal ID",
+    ssp_code: "Deal Code",
+    ssp_name: "Deal Name",
+    ssp_stage: "Stage",
+    ssp_account: "Account",
+    ssp_owner_id: "Deal Owner",
+    ssp_value: "Deal Value",
+    ssp_probability: "Probability",
+    ssp_close_date: "Close Date",
+    ssp_notes: "Notes",
+
+    // Attachments / Files
+    atc_id: "Attachment ID",
+    atc_file_name: "File Name",
+    file: "File Name",
+    atc_size_kb: "File Size (KB)",
+    size_kb: "File Size (KB)",
+    atc_mime: "File Type",
+    mime: "File Type",
+    task: "Task",
+    storage: "Storage",
+    drive_file_id: "Drive File ID",
+    recycle_bin_id: "Recycle Bin ID",
+    bin_id: "Recycle Bin ID",
+
+    // Subtasks
+    stk_id: "Subtask ID",
+    stk_title: "Checklist Item",
+    stk_done: "Completed",
+    stk_sort_order: "Sort Order",
+
+    // Generic / Security
+    reason: "Reason",
+    account: "Account",
+    scope: "Scope",
+    failed_attempts: "Failed Attempts"
+};
+
+/**
+ * Maps raw database column names into human-readable labels.
+ */
+function formatAuditFieldLabel(rawKey) {
+    if (!rawKey) return "";
+    if (AUDIT_FIELD_LABELS[rawKey]) {
+        return AUDIT_FIELD_LABELS[rawKey];
+    }
+    // Strip common 3-letter table prefixes (tsk_, pro_, usr_, ssp_, atc_, stk_, alg_, rbs_, prr_, etc.)
+    const stripped = String(rawKey).replace(/^[a-z]{3}_/, "");
+    // Replace underscores and camelCase with spaced Title Case words
+    return stripped
+        .replace(/([A-Z])/g, " $1")
+        .replace(/[_-]+/g, " ")
+        .trim()
+        .split(/\s+/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
+}
+
+/**
+ * Formats values for audit log inspection into user-friendly text.
+ */
+function formatAuditFieldValue(key, val) {
+    if (val === null || val === undefined || val === "") {
+        return <span className="muted">-</span>;
+    }
+    if (typeof val === "boolean") {
+        return val ? "Yes" : "No";
+    }
+    if ((key === "status" || key === "usr_status") && (val === 1 || val === "1" || val === 0 || val === "0")) {
+        return Number(val) === 1 ? "Active" : "Inactive";
+    }
+    if (key === "stk_done" && (val === 1 || val === "1" || val === 0 || val === "0")) {
+        return Number(val) === 1 ? "Completed" : "Pending";
+    }
+    if (Array.isArray(val)) {
+        if (val.length === 0) return <span className="muted">None</span>;
+        return val.map(item => (typeof item === "object" ? JSON.stringify(item) : String(item))).join(", ");
+    }
+    if (typeof val === "object") {
+        return JSON.stringify(val);
+    }
+    const strVal = String(val);
+    if (/^[a-z]+(_[a-z]+)+$/.test(strVal)) {
+        return strVal.split("_").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+    }
+    return strVal;
+}
+
+/**
+ * Safely parses JSON strings into objects/arrays if applicable.
+ */
+function tryParseJson(val) {
+    if (typeof val !== "string") return val;
+    const trimmed = val.trim();
+    if ((trimmed.startsWith("{") && trimmed.endsWith("}")) || (trimmed.startsWith("[") && trimmed.endsWith("]"))) {
+        try {
+            return JSON.parse(trimmed);
+        } catch {
+            return val;
+        }
+    }
+    return val;
+}
+
 /**
  * Formats old/new diff values for audit log inspection.
  */
@@ -831,15 +1001,36 @@ function AuditDiffValue({value}) {
     if (value === null || value === undefined) {
         return <span className="muted">-</span>;
     }
-    if (typeof value !== "object") {
-        return String(value);
+    const parsedValue = tryParseJson(value);
+    if (parsedValue === null || parsedValue === undefined) {
+        return <span className="muted">-</span>;
     }
-    return Object.keys(value).map((key) => {
-        const val = value[key];
-        const displayText = val === null || val === undefined || val === "" ? "-" : typeof val === "object" ? JSON.stringify(val) : String(val);
+    if (Array.isArray(parsedValue)) {
+        if (parsedValue.length === 0) return <span className="muted">-</span>;
         return (
-            <div key={key}>
-                <span className="muted">{key}:</span> {displayText}
+            <div>
+                {parsedValue.map((item, idx) => (
+                    <div key={idx} style={{ margin: "2px 0" }}>
+                        {typeof item === "object" ? <AuditDiffValue value={item} /> : String(item)}
+                    </div>
+                ))}
+            </div>
+        );
+    }
+    if (typeof parsedValue !== "object") {
+        return String(parsedValue);
+    }
+    const keys = Object.keys(parsedValue);
+    if (keys.length === 0) {
+        return <span className="muted">-</span>;
+    }
+    return keys.map((key) => {
+        const rawVal = parsedValue[key];
+        const val = tryParseJson(rawVal);
+        return (
+            <div key={key} style={{ margin: "2px 0" }}>
+                <span className="muted" style={{ fontWeight: 600 }}>{formatAuditFieldLabel(key)}:</span>{" "}
+                {formatAuditFieldValue(key, val)}
             </div>
         );
     });
