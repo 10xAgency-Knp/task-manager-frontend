@@ -21,23 +21,36 @@ import {
 
 const AUTH_TOKEN_STORAGE_KEY = "crm_auth_token";
 
+function isPrivateIp(hostname) {
+  return /^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)/.test(hostname);
+}
+
 /**
  * Resolve API base URL dynamically.
- * If accessed from another device (e.g. mobile phone on LAN IP 192.168.x.x)
- * and the configured URL points to localhost, automatically rewrite the host
- * so mobile requests reach the Laravel backend on this machine.
+ * - In production (e.g. task-manager.clicxormedia.in), always target the production API.
+ * - On local machine (localhost / 127.0.0.1), use the configured VITE_API_BASE_URL.
+ * - On local LAN testing (e.g. mobile on 192.168.x.x), dynamically rewrite port 8000 for LAN testing.
  */
 function resolveApiBaseUrl() {
   const envUrl = import.meta.env.VITE_API_BASE_URL;
+
   if (typeof window !== "undefined" && window.location) {
     const currentHost = window.location.hostname;
-    if (currentHost && currentHost !== "localhost" && currentHost !== "127.0.0.1") {
+
+    // 1. Production / Staging domains: never attach :8000
+    if (currentHost.includes("clicxormedia.in") || currentHost.includes("the10xagency.in")) {
+      return "https://api-task-manager.clicxormedia.in/api";
+    }
+
+    // 2. LAN IP testing only (e.g. 192.168.1.x from mobile device)
+    if (isPrivateIp(currentHost)) {
       if (!envUrl || envUrl.includes("localhost") || envUrl.includes("127.0.0.1")) {
         const port = "8000";
         return `${window.location.protocol}//${currentHost}:${port}/api`;
       }
     }
   }
+
   return envUrl || "https://api-task-manager.clicxormedia.in/api";
 }
 
