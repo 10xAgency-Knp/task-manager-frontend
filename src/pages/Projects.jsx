@@ -635,7 +635,7 @@ export function Deals() {
             <table>
               <thead>
                 <tr>
-                  <th>Deal</th>
+                  <th style={{ whiteSpace: "nowrap" }}>Deal</th>
                   <th>Account</th>
                   <th>Owner</th>
                   <th>Stage</th>

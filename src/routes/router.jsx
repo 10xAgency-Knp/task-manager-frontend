@@ -23,7 +23,10 @@ if (typeof window !== "undefined" && window.location.hash && window.location.has
 }
 
 function DefaultIndexRedirect() {
-  useAppStore();
+  const store = useAppStore();
+  if (!store.currentUser) {
+    return null;
+  }
   return <Navigate to={`/${getFirstAllowedView()}`} replace />;
 }
 

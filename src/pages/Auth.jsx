@@ -126,6 +126,7 @@ export async function signOut() {
     focusedItem: null,
     reports: null,
     currentView: "dashboard",
+    currentScreen: "login",
     screen: "login",
     authMsg: "",
     activeModal: null,

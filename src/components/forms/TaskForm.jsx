@@ -127,7 +127,7 @@ function TaskForm({ taskToEdit, preset = {} }) {
       .filter(id => candidateAssigneePool.includes(id)),
     priority: "Medium",
     status: "To Do",
-    startDate: getTodayISO(),
+    startDate: "",
     due: "",
     hours: 0,
     spent: 0,
@@ -357,20 +357,12 @@ function TaskForm({ taskToEdit, preset = {} }) {
     }
 
     if (!areMajorFieldsLocked) {
-      validationErrors.startDate = validateTextField(formData.startDate, {
-        label: "Start date",
-        required: true
-      });
-      validationErrors.due = validateTextField(formData.due, {
-        label: "End date",
-        required: true
-      });
       validationErrors.description = validateDescriptionField(formData.description);
 
       if (!formData.assignees.length) {
         validationErrors.assignees = "Please choose at least one assignee.";
       }
-      if (!validationErrors.startDate && !validationErrors.due && formData.due < formData.startDate) {
+      if (formData.startDate && formData.due && formData.due < formData.startDate) {
         validationErrors.due = "End date cannot be earlier than the start date.";
       }
       validationErrors.hours = validateNumericField(formData.hours, {
@@ -642,7 +634,6 @@ function TaskForm({ taskToEdit, preset = {} }) {
 
         <FormField
           label="Start date"
-          isRequired={!areMajorFieldsLocked}
           errorMessage={formErrors.startDate}
         >
           <input
@@ -657,7 +648,6 @@ function TaskForm({ taskToEdit, preset = {} }) {
 
         <FormField
           label="End date (due)"
-          isRequired={!areMajorFieldsLocked}
           errorMessage={formErrors.due}
         >
           <input

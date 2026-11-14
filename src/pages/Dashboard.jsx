@@ -138,7 +138,7 @@ export function Dashboard() {
       <div className="welcome">
         <div style={{ position: "relative", zIndex: 1 }}>
           <h2>
-            {greetingText}, {String(currentUser.name).split(" ")[0]}
+            {`${greetingText}, ${String(currentUser?.name || "there").split(" ")[0]}`}
           </h2>
           <p>
             {myOpenTasks.length

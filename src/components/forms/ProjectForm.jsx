@@ -403,7 +403,7 @@ function ProjectForm({ projectToEdit, p }) {
         </FormField>
 
         <div className="f full">
-          <span>Team members</span>
+          <span>Team members (optional)</span>
           <PeoplePicker
             value={formData.memberIds}
             onChange={memberIds => updateFormField("memberIds", memberIds)}
