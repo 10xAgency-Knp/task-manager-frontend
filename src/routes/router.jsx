@@ -1,10 +1,10 @@
 /**
- * React Hash Router Configuration
+ * React Browser Router Configuration
  *
- * Configures the application route tree using hash routing (#/...) for universal
- * static host compatibility without requiring server-side URL rewrite configuration.
+ * Configures the application route tree using HTML5 History API (BrowserRouter)
+ * for clean, modern URLs without '#' symbols.
  */
-import { createHashRouter, Navigate, useParams } from "react-router-dom";
+import { createBrowserRouter, Navigate, useParams } from "react-router-dom";
 import App from "../App.jsx";
 import { Shell } from "../layouts/Shell.jsx";
 import { PageErrorBoundary, ViewPage } from "./pages.jsx";
@@ -12,8 +12,15 @@ import { TaskDetail } from "../pages/TaskDetail.jsx";
 import { ProjectDetail } from "../pages/Projects.jsx";
 import { UserPage } from "../pages/People.jsx";
 import { NotFound } from "../pages/NotFound.jsx";
-import { setNavigator, getFirstAllowedView } from "./navigation.js";
+import { setNavigator, getFirstAllowedView, pathFromHash } from "./navigation.js";
 import { useAppStore } from "../store/appStore.js";
+
+// Handle backward compatibility for legacy hash links (e.g. bookmarks or notification clicks #/dashboard)
+if (typeof window !== "undefined" && window.location.hash && window.location.hash.startsWith("#/")) {
+  const legacyHash = window.location.hash;
+  const cleanPath = pathFromHash(legacyHash);
+  window.history.replaceState(null, "", cleanPath);
+}
 
 function DefaultIndexRedirect() {
   useAppStore();
@@ -53,7 +60,7 @@ function UserProfileRoute() {
   );
 }
 
-export const router = createHashRouter(
+export const router = createBrowserRouter(
   [
     {
       path: "/",

@@ -5,10 +5,10 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-/* base "./" lets the built app run from any folder (or straight from dist/ on a static host) */
+/* base "/" ensures clean absolute asset resolution under HTML5 browser routing */
 export default defineConfig({
   plugins: [react()],
-  base: "./",
+  base: "/",
   server: {
     host: "0.0.0.0",
     port: 5173,

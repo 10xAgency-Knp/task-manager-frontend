@@ -132,8 +132,12 @@ export async function signOut() {
     modalStack: []
   });
 
-  if (typeof window !== "undefined" && window.location) {
-    window.location.hash = "#/login";
+  if (typeof window !== "undefined") {
+    if (window.history && window.history.pushState) {
+      window.history.pushState(null, "", "/login");
+    } else if (window.location) {
+      window.location.href = "/login";
+    }
   }
 }
 

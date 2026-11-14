@@ -1388,7 +1388,7 @@ function DevicePushNotificationsCard() {
                         showDeviceNotification(
                           result.local.title,
                           result.local.body,
-                          "#/notifications",
+                          "/notifications",
                           `crm-test-${Date.now()}`,
                           true
                         );

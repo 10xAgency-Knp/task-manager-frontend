@@ -182,7 +182,7 @@ export function Shell() {
     document.addEventListener("keydown", handleGlobalKeyDown);
 
     const unsubscribePushWorker = listenServiceWorker(
-      targetUrl => openHash(targetUrl || "#/notifications"),
+      targetUrl => openHash(targetUrl || "/notifications"),
       () => notifPollOnce()
     );
 

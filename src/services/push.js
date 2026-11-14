@@ -7,6 +7,7 @@
 
 import { API, CONFIG } from "./api.js";
 import { appStore } from "../store/appStore.js";
+import { openHash } from "../routes/navigation.js";
 
 /**
  * Global push state singleton.
@@ -171,7 +172,7 @@ export function showDeviceNotification(title, body, url, tag, force = false) {
             });
             notification.onclick = () => {
               window.focus();
-              if (url) location.hash = url;
+              if (url) openHash(url);
               notification.close();
             };
           } catch (e) {}
@@ -184,7 +185,7 @@ export function showDeviceNotification(title, body, url, tag, force = false) {
       });
       notification.onclick = () => {
         window.focus();
-        if (url) location.hash = url;
+        if (url) openHash(url);
         notification.close();
       };
     }
@@ -197,7 +198,7 @@ export function showDeviceNotification(title, body, url, tag, force = false) {
       });
       notification.onclick = () => {
         window.focus();
-        if (url) location.hash = url;
+        if (url) openHash(url);
         notification.close();
       };
     } catch (e) {}
@@ -215,13 +216,13 @@ export function pushLocalNotify(notificationItem) {
 
   const title = notificationItem.actor ? `${notificationItem.actor} · 10X CRM` : (CONFIG.APP_NAME || "10X Agency CRM");
   const bodyText = `${notificationItem.title || ""}${notificationItem.body ? `\n${notificationItem.body}` : ""}`;
-  let targetUrl = "#/notifications";
+  let targetUrl = "/notifications";
   if (notificationItem.task) {
-    targetUrl = `#/task/${notificationItem.task}`;
+    targetUrl = `/task/${notificationItem.task}`;
   } else if (notificationItem.project) {
-    targetUrl = `#/project/${notificationItem.project}`;
+    targetUrl = `/project/${notificationItem.project}`;
   } else if (notificationItem.deal) {
-    targetUrl = `#/deals`;
+    targetUrl = `/deals`;
   }
 
   showDeviceNotification(title, bodyText, targetUrl, `crm-n-${notificationItem.id}-${Date.now()}`);
