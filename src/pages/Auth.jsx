@@ -355,7 +355,7 @@ export function Forgot() {
       <AlertBox msg={appStore.authMsg} good={appStore.authGood} />
 
       <div style={{ fontSize: 12.6, color: "var(--text2)", lineHeight: 1.6, marginTop: 20 }}>
-        Enter your registered email. Admins get a reset link at that email. For everyone else, the request goes to the Admin, who will set a temporary password for you.
+        Enter your registered email. Admins and Managers receive a direct password reset link. For employees, the request is sent to the Admin.
       </div>
 
       <label className="f" style={{ marginTop: 16 }}>
@@ -378,7 +378,7 @@ export function Forgot() {
       <FullWidthButton
         id="fBtn"
         iconName="mail"
-        label="Send request to Admin"
+        label="Send reset link"
         isBusy={isSubmitting}
         busyLabel="Sending..."
         onClick={handleForgotSubmit}

@@ -64,6 +64,7 @@ import {
   deleteUserAvatar,
   getAuthToken,
   clearAuthToken,
+  httpGet,
   httpPost
 } from "./httpApi.js";
 import {
@@ -365,8 +366,26 @@ export const API = {
       return API.call("forgotPassword", { email });
     }
   },
-  checkReset: (resetToken) => API.call("checkReset", { reset: resetToken }),
-  resetPassword: (resetToken, password) => API.call("resetPassword", { reset: resetToken, password }),
+  checkReset: async (resetToken) => {
+    try {
+      return await httpGet("/reset-password/check", { reset: resetToken });
+    } catch (err) {
+      if (err.response) {
+        throw new Error(err.response?.data?.message || "This reset link is not valid. Please request a new one.");
+      }
+      return API.call("checkReset", { reset: resetToken });
+    }
+  },
+  resetPassword: async (resetToken, password) => {
+    try {
+      return await httpPost("/reset-password/confirm", { reset: resetToken, password });
+    } catch (err) {
+      if (err.response) {
+        throw new Error(err.response?.data?.message || "Failed to reset password.");
+      }
+      return API.call("resetPassword", { reset: resetToken, password });
+    }
+  },
   changePassword: async (currentPassword, newPassword, confirmPassword) => {
     const data = await apiChangePassword(currentPassword, newPassword, confirmPassword);
     const transformedUser = data.user ? transformUserFromApi(data.user) : null;
