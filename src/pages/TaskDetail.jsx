@@ -28,6 +28,7 @@ import {
   PRIORITY_BADGE_CLASSES,
   validateUploadFile,
   readFileAsDataUrl,
+  getTaskMentionCandidates,
   UPLOAD_ACCEPT
 } from "../utils/helpers.js";
 import { navigateToDetail, navigateBack } from "../routes/navigation.js";
@@ -649,7 +650,12 @@ function CommentsSection({ taskDetail, taskId, canUpdate, reload }) {
   const mentionedUserIdsRef = useRef([]);
   const textareaRef = useRef(null);
 
-  const mentionablePeople = taskDetail.mentionable || [];
+  const task = taskDetail?.task || taskDetail || {};
+  const mentionablePeople = getTaskMentionCandidates(
+    task,
+    appStore.currentUser,
+    taskDetail.mentionable || appStore.database?.users
+  );
   const commentsList = taskDetail.comments || [];
 
   const inspectMentionsAtCursor = () => {

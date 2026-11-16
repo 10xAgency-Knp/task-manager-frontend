@@ -9,7 +9,7 @@
 import { appStore, setStoreState } from "../store/appStore.js";
 import { stopPoll } from "./sync.js";
 import { request } from "./mockApi.js";
-import { canViewModule } from "../utils/helpers.js";
+import { canViewModule, getTaskMentionCandidates } from "../utils/helpers.js";
 import {
   login as apiLogin,
   logout as apiLogout,
@@ -458,9 +458,11 @@ export const API = {
     [...directoryUsers, ...usersList].forEach((u) => {
       if (u && u.id) mentionMap.set(Number(u.id), u);
     });
-    const mentionableUsers = mentionMap.size > 0
+    const mentionablePool = mentionMap.size > 0
       ? Array.from(mentionMap.values())
       : assignableIds.map((id) => ({ id: Number(id), name: `User #${id}` }));
+
+    const mentionableUsers = getTaskMentionCandidates(task, appStore.currentUser, mentionablePool);
 
     const payload = {
       ok: true,

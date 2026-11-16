@@ -1006,6 +1006,181 @@ export function readFileAsDataUrl(file) {
   });
 }
 
+/**
+ * Calculates mentionable users for a task based on role hierarchy:
+ * - Employee logged in: Task assignees + employee's reporting manager + super admins
+ * - Manager logged in: Task assignees + manager's reporting manager + admins & super admins
+ * - Admin / Super Admin logged in: Task assignees + all admins & super admins +
+ *     reporting managers of any employee assignees on this task (no downlines of manager assignees)
+ * - Self is always excluded
+ *
+ * @param {Object} task
+ * @param {Object} [currentUser=appStore.currentUser]
+ * @param {Array<Object>} [usersPool]
+ * @returns {Array<Object>}
+ */
+export function getTaskMentionCandidates(task, currentUser = appStore.currentUser, usersPool = null) {
+  if (!task) return [];
+  const activeCurrentUser = currentUser || appStore.currentUser;
+  const currentUserId = activeCurrentUser ? Number(activeCurrentUser.id) : null;
+
+  // Build full user directory map for resolving details
+  const pool = Array.isArray(usersPool) && usersPool.length > 0
+    ? usersPool
+    : [...(appStore.database?.users || []), ...(appStore.database?.userDirectory || [])];
+
+  const userMap = new Map();
+  pool.forEach((u) => {
+    if (u && (u.id || u.usr_id)) {
+      const numId = Number(u.id || u.usr_id);
+      if (!userMap.has(numId) || (u.role && !userMap.get(numId).role)) {
+        userMap.set(numId, {
+          id: numId,
+          name: u.name || u.usr_name || `User #${numId}`,
+          role: u.role || u.usr_role || "Employee",
+          designation: u.designation || u.usr_designation || "",
+          avatar: u.avatar || u.usr_avatar || "",
+          superAdmin: Boolean(u.superAdmin || u.isSuperAdmin || u.usr_is_super_admin),
+          isSuperAdmin: Boolean(u.superAdmin || u.isSuperAdmin || u.usr_is_super_admin),
+          reportsTo: u.reportsTo ?? u.reportsToId ?? u.usr_reporting_to ?? null,
+          status: u.status ?? (u.usr_status !== undefined ? (u.usr_status ? "Active" : "Inactive") : "Active"),
+        });
+      }
+    }
+  });
+
+  // Also harvest any assignees embedded in the task object
+  const rawAssignees = Array.isArray(task.assignees) ? task.assignees : [];
+  rawAssignees.forEach(a => {
+    const uid = Number(a.userId || a.tsa_usr_id || a.id);
+    if (uid && !userMap.has(uid)) {
+      userMap.set(uid, {
+        id: uid,
+        name: a.name || a.usr_name || `User #${uid}`,
+        role: a.role || a.usr_role || "Employee",
+        designation: a.designation || a.usr_designation || "",
+        avatar: a.avatar || a.usr_avatar || "",
+        superAdmin: Boolean(a.superAdmin || a.isSuperAdmin || a.usr_is_super_admin),
+        isSuperAdmin: Boolean(a.superAdmin || a.isSuperAdmin || a.usr_is_super_admin),
+        reportsTo: a.reportsTo ?? a.reportsToId ?? a.usr_reporting_to ?? null,
+        status: "Active"
+      });
+    }
+  });
+
+  const resolveUser = (id) => {
+    const numId = Number(id);
+    if (userMap.has(numId)) return userMap.get(numId);
+    const fallback = getUserById(numId);
+    if (fallback) {
+      return {
+        id: numId,
+        name: fallback.name || `User #${numId}`,
+        role: fallback.role || "Employee",
+        designation: fallback.designation || "",
+        avatar: fallback.avatar || "",
+        superAdmin: Boolean(fallback.superAdmin || fallback.isSuperAdmin),
+        isSuperAdmin: Boolean(fallback.superAdmin || fallback.isSuperAdmin),
+        reportsTo: fallback.reportsTo ?? fallback.reportsToId ?? null,
+        status: fallback.status || "Active"
+      };
+    }
+    return null;
+  };
+
+  const isSuper = (u) => Boolean(u && (u.superAdmin || u.isSuperAdmin || u.usr_is_super_admin));
+  const isAdminOrSuper = (u) => Boolean(u && (isSuper(u) || String(u.role || u.usr_role || "").toLowerCase() === "admin"));
+  const isManager = (u) => Boolean(u && String(u.role || u.usr_role || "").toLowerCase() === "manager" && !isAdminOrSuper(u));
+  const isEmployee = (u) => Boolean(u && !isAdminOrSuper(u) && !isManager(u));
+
+  // Extract task assignee IDs
+  const rawAssigneeIds = Array.isArray(task.assigneeIds) ? task.assigneeIds : [];
+  const assigneeUserIds = Array.from(
+    new Set([
+      ...rawAssigneeIds.map(Number),
+      ...rawAssignees.map(a => Number(a.userId || a.tsa_usr_id || a.id))
+    ])
+  ).filter(id => id > 0);
+
+  const candidateIds = new Set();
+
+  // 1. All task assignees are always included
+  assigneeUserIds.forEach(id => candidateIds.add(id));
+
+  // Determine current user's role tier
+  const currentIsAdmin = isAdminOrSuper(activeCurrentUser);
+  const currentIsManager = !currentIsAdmin && isManager(activeCurrentUser);
+
+  if (currentIsAdmin) {
+    // Admin / Super Admin logged in:
+    // 1. Task assignees (already added)
+    // 2. All Admins & Super Admins
+    userMap.forEach((u, uid) => {
+      if (isAdminOrSuper(u)) candidateIds.add(uid);
+    });
+
+    // 3. Plus: If any task assignee is an employee, include their reporting manager
+    assigneeUserIds.forEach(assigneeId => {
+      const assigneeObj = resolveUser(assigneeId);
+      if (assigneeObj && isEmployee(assigneeObj)) {
+        const reportsTo = assigneeObj.reportsTo ?? assigneeObj.reportsToId ?? assigneeObj.usr_reporting_to;
+        if (reportsTo && Number(reportsTo) > 0) {
+          candidateIds.add(Number(reportsTo));
+        }
+      }
+    });
+  } else if (currentIsManager) {
+    // Manager logged in:
+    // 1. Task assignees (already added)
+    // 2. Manager's reporting manager (if any)
+    const reportsTo = activeCurrentUser?.reportsTo ?? activeCurrentUser?.reportsToId ?? activeCurrentUser?.usr_reporting_to;
+    if (reportsTo && Number(reportsTo) > 0) {
+      candidateIds.add(Number(reportsTo));
+    }
+    // 3. All Admins & Super Admins
+    userMap.forEach((u, uid) => {
+      if (isAdminOrSuper(u)) candidateIds.add(uid);
+    });
+  } else {
+    // Employee logged in:
+    // 1. Task assignees (already added)
+    // 2. Employee's reporting manager
+    const reportsTo = activeCurrentUser?.reportsTo ?? activeCurrentUser?.reportsToId ?? activeCurrentUser?.usr_reporting_to;
+    if (reportsTo && Number(reportsTo) > 0) {
+      candidateIds.add(Number(reportsTo));
+    }
+    // 3. All Super Admins
+    userMap.forEach((u, uid) => {
+      if (isSuper(u)) candidateIds.add(uid);
+    });
+  }
+
+  // Self is always excluded
+  if (currentUserId) {
+    candidateIds.delete(currentUserId);
+  }
+
+  // Convert IDs back to rich candidate objects
+  const candidates = [];
+  candidateIds.forEach(id => {
+    const userObj = resolveUser(id);
+    if (userObj && (userObj.status === undefined || userObj.status === "Active" || userObj.status === 1 || userObj.status === "1")) {
+      candidates.push({
+        id: Number(userObj.id),
+        name: userObj.name || `User #${id}`,
+        role: userObj.role || "Member",
+        designation: userObj.designation || "",
+        avatar: userObj.avatar || "",
+        superAdmin: Boolean(userObj.superAdmin || userObj.isSuperAdmin),
+        isSuperAdmin: Boolean(userObj.superAdmin || userObj.isSuperAdmin),
+        reportsTo: userObj.reportsTo ?? userObj.reportsToId ?? null
+      });
+    }
+  });
+
+  return candidates;
+}
+
 /* ==========================================================================
    LEGACY COMPATIBILITY EXPORTS
    Guarantees non-breaking incremental transition while updating caller files.
