@@ -18,8 +18,53 @@ const alarmDebugState = {
   lastAt: 0,
   lastMode: "chime",
   lastTitle: "",
+  lastSpokenText: "",
+  lastVoiceName: "",
   audioUnlocked: false,
 };
+
+let cachedVoices = [];
+
+function loadVoices() {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+  try {
+    const list = window.speechSynthesis.getVoices();
+    if (Array.isArray(list) && list.length > 0) {
+      cachedVoices = list;
+    }
+  } catch {
+    // Ignore error
+  }
+}
+
+if (typeof window !== "undefined" && "speechSynthesis" in window) {
+  loadVoices();
+  try {
+    window.speechSynthesis.onvoiceschanged = () => {
+      loadVoices();
+    };
+  } catch {
+    // Ignore error
+  }
+}
+
+export function getHumanizedVoice() {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) return null;
+  loadVoices();
+  const voices = cachedVoices.length > 0 ? cachedVoices : (window.speechSynthesis.getVoices() || []);
+  if (!voices || voices.length === 0) return null;
+
+  return (
+    voices.find(v => v.lang && v.lang.startsWith("en") && (v.name.includes("Natural") || v.name.includes("Online"))) ||
+    voices.find(v => v.lang && v.lang.startsWith("en") && (v.name.includes("Google") || v.name.includes("Premium"))) ||
+    voices.find(v => v.lang && v.lang.startsWith("en") && (v.name.includes("Jenny") || v.name.includes("Aria") || v.name.includes("Guy") || v.name.includes("Samantha"))) ||
+    voices.find(v => v.lang && v.lang.startsWith("en") && !v.localService) ||
+    voices.find(v => v.lang === "en-US" || v.lang === "en-GB") ||
+    voices.find(v => v.lang && v.lang.startsWith("en")) ||
+    voices[0] ||
+    null
+  );
+}
 
 function readStorage(key, fallback) {
   try {
@@ -180,12 +225,26 @@ function speakNotificationAnnouncement(notificationItem) {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
   try {
     window.speechSynthesis.cancel();
-    const rawTitle = String(notificationItem?.title || "You have a new notification").trim();
-    const spokenText = rawTitle.length > 90 ? rawTitle.slice(0, 90) : rawTitle;
+    let rawTitle = String(notificationItem?.title || "You have a new notification").trim();
+
+    // Humanize phrase: Replace any "10x agency crm" with "10x Agency Task Management CRM"
+    rawTitle = rawTitle.replace(/10x\s+agency\s+crm/gi, "10X Agency Task Management CRM");
+
+    const spokenText = rawTitle.length > 120 ? rawTitle.slice(0, 120) : rawTitle;
     const utterance = new SpeechSynthesisUtterance(`New notification. ${spokenText}`);
-    utterance.rate = 1.04;
+
+    const preferredVoice = getHumanizedVoice();
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+    }
+
+    utterance.rate = 0.95; // Humanized, natural cadence
     utterance.pitch = 1.0;
-    utterance.volume = 0.9;
+    utterance.volume = 0.92;
+
+    alarmDebugState.lastSpokenText = `New notification. ${spokenText}`;
+    alarmDebugState.lastVoiceName = utterance.voice?.name || "default";
+
     window.speechSynthesis.speak(utterance);
   } catch {
     // Ignore SpeechSynthesis errors in browsers/environments without TTS voices

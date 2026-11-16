@@ -87,7 +87,7 @@ import {
  * Global application constants and configuration limits.
  */
 export const CONFIG = {
-  APP_NAME: "10X Agency CRM",
+  APP_NAME: "10X Agency Task Management CRM",
   ORG: "10X Agency",
   LOGO: "assets/img/logo.png",
   MAX_UPLOAD_MB: 5,
@@ -623,7 +623,7 @@ export const API = {
       sent: 1,
       devices: 1,
       local: {
-        title: "10X Agency CRM",
+        title: "10X Agency Task Management CRM",
         body: "Notifications are working on this device.",
       },
     };

@@ -184,7 +184,7 @@ export function pushSubscribe(payload, user) { const db = getDb(); db.pushDevice
 export function pushUnsubscribe(payload, user) { delete getDb().pushDevices[user.id]; return { ok: true }; }
 export function pushTest(payload, user) {
   audit(user, "push_test", "notification", user.id, null, null, "Sent a test push notification");
-  return { ok: true, sent: 1, local: { title: "10X Agency CRM", body: "Test notification: push notifications work on this device." } };
+  return { ok: true, sent: 1, local: { title: "10X Agency Task Management CRM", body: "Test notification: push notifications work on this device." } };
 }
 
 /* ---------------- profile photo (kept as a data URL) ---------------- */

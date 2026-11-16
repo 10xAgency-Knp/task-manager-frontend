@@ -214,7 +214,7 @@ export function pushLocalNotify(notificationItem) {
   if (!PUSH.active) return;
   if (!("Notification" in window) || Notification.permission !== "granted") return;
 
-  const title = notificationItem.actor ? `${notificationItem.actor} · 10X CRM` : (CONFIG.APP_NAME || "10X Agency CRM");
+  const title = notificationItem.actor ? `${notificationItem.actor} · 10X CRM` : (CONFIG.APP_NAME || "10X Agency Task Management CRM");
   const bodyText = `${notificationItem.title || ""}${notificationItem.body ? `\n${notificationItem.body}` : ""}`;
   let targetUrl = "/notifications";
   if (notificationItem.task) {
