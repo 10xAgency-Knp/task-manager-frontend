@@ -140,7 +140,15 @@ export function getTodayISO() {
  */
 export function formatDisplayDate(dateValue) {
   if (!dateValue) return "-";
-  const dateObj = new Date(String(dateValue).slice(0, 10) + "T00:00:00");
+  let dateObj;
+  if (dateValue instanceof Date) {
+    dateObj = dateValue;
+  } else if (typeof dateValue === "number") {
+    dateObj = new Date(dateValue);
+  } else {
+    const dateStr = String(dateValue).trim().slice(0, 10);
+    dateObj = new Date(dateStr + "T00:00:00");
+  }
   if (isNaN(dateObj.getTime())) return String(dateValue);
   return dateObj.toLocaleDateString("en-IN", {
     day: "2-digit",
@@ -156,7 +164,15 @@ export function formatDisplayDate(dateValue) {
  */
 export function formatShortDisplayDate(dateValue) {
   if (!dateValue) return "-";
-  const dateObj = new Date(String(dateValue).slice(0, 10) + "T00:00:00");
+  let dateObj;
+  if (dateValue instanceof Date) {
+    dateObj = dateValue;
+  } else if (typeof dateValue === "number") {
+    dateObj = new Date(dateValue);
+  } else {
+    const dateStr = String(dateValue).trim().slice(0, 10);
+    dateObj = new Date(dateStr + "T00:00:00");
+  }
   if (isNaN(dateObj.getTime())) return String(dateValue);
   return dateObj.toLocaleDateString("en-IN", {
     day: "2-digit",
@@ -166,16 +182,25 @@ export function formatShortDisplayDate(dateValue) {
 
 /**
  * Formats a date-time string into readable format (e.g., "24 Oct, 04:30 pm").
- * @param {string|Date} dateValue
+ * @param {string|Date|number} dateValue
  * @returns {string}
  */
 export function formatDateTime(dateValue) {
   if (!dateValue) return "-";
-  const dateObj = new Date(String(dateValue).replace(" ", "T"));
+  let dateObj;
+  if (dateValue instanceof Date) {
+    dateObj = dateValue;
+  } else if (typeof dateValue === "number") {
+    dateObj = new Date(dateValue);
+  } else {
+    const str = String(dateValue).trim().replace(" ", "T");
+    dateObj = new Date(str);
+  }
   if (isNaN(dateObj.getTime())) return String(dateValue);
   return dateObj.toLocaleString("en-IN", {
     day: "2-digit",
     month: "short",
+    year: "numeric",
     hour: "2-digit",
     minute: "2-digit"
   });

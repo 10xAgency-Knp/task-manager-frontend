@@ -972,6 +972,9 @@ function formatAuditFieldValue(key, val) {
         return JSON.stringify(val);
     }
     const strVal = String(val);
+    if (/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(strVal)) {
+        return formatDateTime(strVal);
+    }
     if (/^[a-z]+(_[a-z]+)+$/.test(strVal)) {
         return strVal.split("_").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
     }
@@ -1217,7 +1220,7 @@ export function Audit() {
                                                 : undefined
                                         }
                                     >
-                                        <td className="nowrap">{row.at}</td>
+                                        <td className="nowrap" title={row.at}>{formatDateTime(row.at)}</td>
                                         <td>
                                             <div className="strong">{row.user_name || "-"}</div>
                                             <div className="muted" style={{fontSize: 11}}>
@@ -1513,7 +1516,7 @@ export function Recycle() {
 // ============================================================================
 
 function formatPasswordResetTime(timestamp) {
-    return timestamp ? formatDateTime(String(timestamp).replace(" ", "T").slice(0, 16)) : "-";
+    return timestamp ? formatDateTime(timestamp) : "-";
 }
 
 let SEEN_PASSWORD_RESETS = {};
