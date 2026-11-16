@@ -19,7 +19,7 @@ import { validatePasswordStrength } from "../utils/helpers.js";
 import { startPoll, stopPoll, applyLoad } from "../services/sync.js";
 import { PUSH } from "../services/push.js";
 import { confirmBox, closeModal } from "../components/Modal.jsx";
-import { getFirstAllowedView, navigateToView, navigate } from "../routes/navigation.js";
+import { VIEWS, isViewAllowed, getFirstAllowedView, navigateToView, navigate } from "../routes/navigation.js";
 
 // ============================================================================
 // STARTUP & SESSION LIFECYCLE
@@ -91,17 +91,34 @@ async function enterApp() {
     appStore.activeModal = null;
   }
 
-  const targetView = getFirstAllowedView();
+  const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+  const isAtRootOrLogin = !currentPath || currentPath === "/" || currentPath === "/login";
 
-  setStoreState({
-    currentView: targetView,
-    currentScreen: "app",
-    screen: "app",
-    authMsg: "",
-    head: null
-  });
+  if (isAtRootOrLogin) {
+    const targetView = getFirstAllowedView();
+    setStoreState({
+      currentView: targetView,
+      currentScreen: "app",
+      screen: "app",
+      authMsg: "",
+      head: null
+    });
+    navigateToView(targetView, null, { replace: true });
+  } else {
+    const candidateView = currentPath.replace(/^\/+/, "").split("/")[0];
+    const initialView =
+      VIEWS[candidateView] && isViewAllowed(candidateView)
+        ? candidateView
+        : appStore.currentView;
 
-  navigateToView(targetView, null, { replace: true });
+    setStoreState({
+      currentView: initialView,
+      currentScreen: "app",
+      screen: "app",
+      authMsg: "",
+      head: null
+    });
+  }
 
   startPoll();
 }
