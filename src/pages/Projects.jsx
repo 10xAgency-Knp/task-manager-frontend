@@ -41,6 +41,7 @@ import {
   Badge,
   MultiLineText
 } from "../components/ui.jsx";
+import { NotFoundPage } from "./errors/index.js";
 import { openTask, askDeleteTask } from "../components/forms/TaskForm.jsx";
 import { openProject, askDeleteProject } from "../components/forms/ProjectForm.jsx";
 import { openDeal, askDeleteDeal } from "../components/forms/DealForm.jsx";
@@ -291,12 +292,7 @@ export function ProjectDetail({ id }) {
   usePageHeader(project?.name, project ? `${project.id} - ${project.status}` : "");
 
   if (!project) {
-    return (
-      <>
-        <BackButton />
-        <AccessDeniedBox message="This project was not found, or it is not shared with you or your team." />
-      </>
-    );
+    return <NotFoundPage resource="project" id={id} />;
   }
 
   const statistics = calculateProjectStatistics(project);

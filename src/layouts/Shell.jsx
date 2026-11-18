@@ -255,6 +255,10 @@ export function Shell() {
     openTask(null, {});
   };
 
+  if (!appStore.currentUser) {
+    return <Outlet />;
+  }
+
   return (
     <div className="app">
       {/* Navigation Sidebar */}

@@ -42,6 +42,11 @@ import {
   Badge,
   MultiLineText
 } from "../components/ui.jsx";
+import {
+  NotFoundPage,
+  AccessDeniedPage,
+  ServerErrorPage
+} from "./errors/index.js";
 import { confirmBox, closeModal } from "../components/Modal.jsx";
 import { usePageHeader } from "../hooks/useHead.js";
 import { openTask } from "../components/forms/TaskForm.jsx";
@@ -49,14 +54,21 @@ import { openTask } from "../components/forms/TaskForm.jsx";
 export function TaskDetail({ id }) {
   const [taskDetailData, setTaskDetailData] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [errorStatus, setErrorStatus] = useState(null);
 
-  const loadTaskDetail = () =>
-    API.detail(id).then(
+  const loadTaskDetail = () => {
+    setErrorMessage("");
+    setErrorStatus(null);
+    return API.detail(id).then(
       response => setTaskDetailData(response.data || response),
       error => {
-        if (!error.silent && error.status !== 404) setErrorMessage(error.message);
+        if (!error.silent) {
+          setErrorMessage(error.message || "Failed to load task details");
+          setErrorStatus(error.status || (error.message?.includes("404") || error.message?.includes("not found") ? 404 : 500));
+        }
       }
     );
+  };
 
   useEffect(() => {
     loadTaskDetail();
@@ -71,13 +83,16 @@ export function TaskDetail({ id }) {
       : ""
   );
 
+  if (errorStatus === 404) {
+    return <NotFoundPage resource="task" id={id} />;
+  }
+
+  if (errorStatus === 403) {
+    return <AccessDeniedPage resource="task" message={errorMessage} />;
+  }
+
   if (errorMessage) {
-    return (
-      <>
-        <BackButton />
-        <AccessDeniedBox message={errorMessage} />
-      </>
-    );
+    return <ServerErrorPage error={{ message: errorMessage }} onReset={loadTaskDetail} />;
   }
 
   if (!taskDetailData) {

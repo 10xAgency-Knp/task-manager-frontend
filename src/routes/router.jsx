@@ -12,6 +12,13 @@ import { TaskDetail } from "../pages/TaskDetail.jsx";
 import { ProjectDetail } from "../pages/Projects.jsx";
 import { UserPage } from "../pages/People.jsx";
 import { NotFound } from "../pages/NotFound.jsx";
+import {
+  RootErrorBoundary,
+  NotFoundPage,
+  AccessDeniedPage,
+  ServerErrorPage,
+  ServiceUnavailablePage
+} from "../pages/errors/index.js";
 import { setNavigator, getFirstAllowedView, pathFromHash } from "./navigation.js";
 import { useAppStore } from "../store/appStore.js";
 
@@ -68,9 +75,11 @@ export const router = createBrowserRouter(
     {
       path: "/",
       element: <App />,
+      errorElement: <RootErrorBoundary />,
       children: [
         {
           element: <Shell />,
+          errorElement: <RootErrorBoundary />,
           children: [
             {
               index: true,
@@ -102,6 +111,31 @@ export const router = createBrowserRouter(
             {
               path: "admin",
               element: <Navigate to="/permissions" replace />
+            },
+            {
+              path: "404",
+              element: <NotFoundPage />,
+              handle: { notFound: true }
+            },
+            {
+              path: "403",
+              element: <AccessDeniedPage />
+            },
+            {
+              path: "access-denied",
+              element: <AccessDeniedPage />
+            },
+            {
+              path: "500",
+              element: <ServerErrorPage />
+            },
+            {
+              path: "503",
+              element: <ServiceUnavailablePage />
+            },
+            {
+              path: "offline",
+              element: <ServiceUnavailablePage />
             },
             {
               path: ":view",

@@ -61,6 +61,7 @@ import {
   Badge,
   RequiredIndicator
 } from "../components/ui.jsx";
+import { NotFoundPage, AccessDeniedPage } from "./errors/index.js";
 import { confirmBox, closeModal } from "../components/Modal.jsx";
 import { openTask, askDeleteTask } from "../components/forms/TaskForm.jsx";
 import { openUser } from "../components/forms/UserForm.jsx";
@@ -212,7 +213,12 @@ export function Members() {
 
 export function UserPage({ id }) {
   const user = getUserById(id);
-  const isViewPermitted = Boolean(user && canViewUser(user));
+
+  if (!user) {
+    return <NotFoundPage resource="user" id={id} />;
+  }
+
+  const isViewPermitted = canViewUser(user);
 
   usePageHeader(
     isViewPermitted ? user.name : "Member",
@@ -221,10 +227,10 @@ export function UserPage({ id }) {
 
   if (!isViewPermitted) {
     return (
-      <>
-        <BackButton />
-        <AccessDeniedBox message="You can only open your own profile and the profiles of people in your team." />
-      </>
+      <AccessDeniedPage
+        resource="user"
+        message="You can only view your own profile and the profiles of members in your team."
+      />
     );
   }
 
