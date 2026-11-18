@@ -122,6 +122,24 @@ export function Projects() {
                   >
                     {project.id}
                   </span>
+                  {project.pmsCode && (
+                    <span
+                      className="badge"
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        padding: "2px 6px",
+                        backgroundColor: "#eef2ff",
+                        color: "#4f46e5",
+                        border: "1px solid #c7d2fe",
+                        borderRadius: "4px",
+                        letterSpacing: ".3px",
+                      }}
+                      title={`Synced from 10X PMS (Source: ${project.pmsCode})`}
+                    >
+                      PMS: {project.pmsCode}
+                    </span>
+                  )}
                   <Badge
                     dot
                     className={PROJECT_STATUS_BADGE_CLASSES[project.status]}
@@ -309,6 +327,24 @@ export function ProjectDetail({ id }) {
                 <span className="muted" style={{ fontSize: 11.4, fontWeight: 750 }}>
                   {project.id}
                 </span>
+                {project.pmsCode && (
+                  <span
+                    className="badge"
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      padding: "2px 6px",
+                      backgroundColor: "#eef2ff",
+                      color: "#4f46e5",
+                      border: "1px solid #c7d2fe",
+                      borderRadius: "4px",
+                      letterSpacing: ".3px",
+                    }}
+                    title={`Synced from 10X PMS (Source: ${project.pmsCode})`}
+                  >
+                    PMS: {project.pmsCode}
+                  </span>
+                )}
                 <Badge dot className={PROJECT_STATUS_BADGE_CLASSES[project.status]}>
                   {project.status}
                 </Badge>

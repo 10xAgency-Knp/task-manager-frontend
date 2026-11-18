@@ -724,10 +724,16 @@ export function transformProjectFromApi(apiProject) {
   const canEdit = isSuper || userPerms.includes("projects.edit") || userPerms.includes("projects.update");
   const canDelete = isSuper || userPerms.includes("projects.delete");
 
+  const pmsCode = apiProject.pms_code || apiProject.pro_pms_code || (() => {
+    const match = String(apiProject.pro_description || "").match(/\[PMS Ref:\s*([^\]]+)\]/);
+    return match ? match[1].trim() : null;
+  })();
+
   return {
     id: apiProject.pro_code || `P-${apiProject.pro_id}`,
     numericId: apiProject.pro_id,
     code: apiProject.pro_code || `P-${apiProject.pro_id}`,
+    pmsCode: pmsCode || null,
     title: apiProject.pro_title || apiProject.pro_name || "",
     name: apiProject.pro_name || apiProject.pro_title || "",
     description: apiProject.pro_description || "",

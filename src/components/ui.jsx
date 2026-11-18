@@ -606,23 +606,24 @@ export function TaskTable({ list, opts = {}, onEdit, onDel }) {
 /**
  * Numbered Pagination Controls
  */
-export function PaginationControls({ page = 1, pages = 1, onPage }) {
-  const currentPage = Number(page) || 1;
-  const totalPages = Number(pages) || 1;
-  if (totalPages <= 1) return null;
+export function PaginationControls({ page = 1, pages = 1, onPage, currentPage, totalPages, onPageChange }) {
+  const curPage = Number(currentPage ?? page) || 1;
+  const totPages = Number(totalPages ?? pages) || 1;
+  const handlePage = onPageChange || onPage || (() => {});
+  if (totPages <= 1) return null;
 
   const pageNumbers = [];
   const addPageNumber = num => {
-    if (!pageNumbers.includes(num) && num >= 1 && num <= totalPages) {
+    if (!pageNumbers.includes(num) && num >= 1 && num <= totPages) {
       pageNumbers.push(num);
     }
   };
 
   addPageNumber(1);
-  for (let offset = currentPage - 2; offset <= currentPage + 2; offset++) {
+  for (let offset = curPage - 2; offset <= curPage + 2; offset++) {
     addPageNumber(offset);
   }
-  addPageNumber(totalPages);
+  addPageNumber(totPages);
   pageNumbers.sort((a, b) => a - b);
 
   const renderedElements = [];
@@ -634,8 +635,8 @@ export function PaginationControls({ page = 1, pages = 1, onPage }) {
       <button
         key={pageNum}
         data-page={pageNum}
-        className={pageNum === currentPage ? "on" : ""}
-        onClick={() => onPage(pageNum)}
+        className={pageNum === curPage ? "on" : ""}
+        onClick={() => handlePage(pageNum)}
       >
         {pageNum}
       </button>
@@ -645,24 +646,24 @@ export function PaginationControls({ page = 1, pages = 1, onPage }) {
   return (
     <div className="pager">
       <button
-        data-page={currentPage - 1}
-        disabled={currentPage <= 1}
+        data-page={curPage - 1}
+        disabled={curPage <= 1}
         title="Previous page"
-        onClick={() => onPage(currentPage - 1)}
+        onClick={() => handlePage(curPage - 1)}
       >
         &lsaquo; Prev
       </button>
       {renderedElements}
       <button
-        data-page={currentPage + 1}
-        disabled={currentPage >= totalPages}
+        data-page={curPage + 1}
+        disabled={curPage >= totPages}
         title="Next page"
-        onClick={() => onPage(currentPage + 1)}
+        onClick={() => handlePage(curPage + 1)}
       >
         Next &rsaquo;
       </button>
       <span className="muted" style={{ fontSize: 12, marginLeft: 6 }}>
-        Page {currentPage} of {totalPages}
+        Page {curPage} of {totPages}
       </span>
     </div>
   );

@@ -1276,8 +1276,16 @@ export function Audit() {
             </div>
 
             <PaginationControls
+                page={auditData.page}
+                pages={auditData.pages}
                 currentPage={auditData.page}
                 totalPages={auditData.pages}
+                onPage={(nextPage) => {
+                    if (nextPage < 1 || nextPage > auditData.pages) return;
+                    Object.assign(appStore.admin.audit, {page: nextPage, open: {}});
+                    emitStoreChange();
+                    window.scrollTo(0, 0);
+                }}
                 onPageChange={(nextPage) => {
                     if (nextPage < 1 || nextPage > auditData.pages) return;
                     Object.assign(appStore.admin.audit, {page: nextPage, open: {}});

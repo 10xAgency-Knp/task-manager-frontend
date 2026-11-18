@@ -924,8 +924,12 @@ export const API = {
         at: row.alg_updated_on || row.alg_created_on || "",
       }));
 
-      const distinctModules = Array.from(new Set(rows.map((r) => r.module).filter(Boolean))).sort();
-      const distinctActions = Array.from(new Set(rows.map((r) => r.action).filter(Boolean))).sort();
+      const distinctModules = (Array.isArray(response.modules) && response.modules.length > 0)
+        ? response.modules
+        : Array.from(new Set(rows.map((r) => r.module).filter(Boolean))).sort();
+      const distinctActions = (Array.isArray(response.actions) && response.actions.length > 0)
+        ? response.actions
+        : Array.from(new Set(rows.map((r) => r.action).filter(Boolean))).sort();
       const peopleMap = new Map();
       (appStore.database?.users || []).forEach((u) => {
         if (u?.id) peopleMap.set(Number(u.id), { id: Number(u.id), name: u.name });
