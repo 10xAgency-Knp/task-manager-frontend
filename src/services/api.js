@@ -882,7 +882,73 @@ export const API = {
   },
 
   // Global Search
-  search: (query) => API.call("search", { q: query }),
+  search: async (query) => {
+    const token = getAuthToken();
+    const queryStr = String(query || "").trim().toLowerCase();
+    if (queryStr.length < 2) return { ok: true, results: [] };
+
+    if (token) {
+      const db = appStore.database || {};
+      const tasks = db.tasks || [];
+      const projects = db.projects || [];
+      const users = db.users || [];
+
+      const has = v => String(v || "").toLowerCase().includes(queryStr);
+      const results = [];
+
+      // 1. Tasks (only if user has permission to view tasks)
+      if (canViewModule("my_tasks") || canViewModule("all_tasks")) {
+        tasks
+          .filter(t => has(t.title) || has(t.description) || has(t.id) || has(t.code) || (t.tags || []).some(has))
+          .slice(0, 12)
+          .forEach(t => {
+            results.push({
+              type: "task",
+              id: t.code || t.id,
+              title: t.title,
+              sub: (t.project ? `${t.project} · ` : "") + (t.status || ""),
+              badge: t.priority || ""
+            });
+          });
+      }
+
+      // 2. Projects (only if user has permission to view projects)
+      if (canViewModule("projects")) {
+        projects
+          .filter(p => has(p.name) || has(p.description) || has(p.id) || has(p.code))
+          .slice(0, 8)
+          .forEach(p => {
+            results.push({
+              type: "project",
+              id: p.code || p.id,
+              title: p.name,
+              sub: p.status || "",
+              badge: ""
+            });
+          });
+      }
+
+      // 3. People (only if user has permission to view members)
+      if (canViewModule("members")) {
+        users
+          .filter(u => has(u.name) || has(u.email) || has(u.dept) || has(u.department) || has(u.designation))
+          .slice(0, 8)
+          .forEach(u => {
+            results.push({
+              type: "person",
+              id: u.id,
+              title: u.name,
+              sub: [u.email, u.designation, u.dept || u.department].filter(Boolean).join(" · "),
+              badge: ""
+            });
+          });
+      }
+
+      return { ok: true, results };
+    }
+
+    return API.call("search", { q: query });
+  },
 
   // Admin Logs & Recycle Bin (Phase 10 Live Integration)
   auditLog: async (filters = {}) => {

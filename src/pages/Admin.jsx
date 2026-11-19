@@ -526,7 +526,7 @@ function RoleChangeModal({permissionsData, targetUser, reloadPermissions}) {
         >
             <div className="field">
                 <label>Role</label>
-                <select id="rcRole" value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}>
+                <select id="rcRole" className="i" value={selectedRole} onChange={(e) => setSelectedRole(e.target.value)}>
                     {["Admin", "Manager", "Employee"].map((roleName) => {
                         const limitInfo = roleLimits[roleName];
                         const isAtLimit = limitInfo && roleName !== targetUser.role && limitInfo.used >= limitInfo.max;

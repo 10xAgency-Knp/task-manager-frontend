@@ -655,7 +655,7 @@ export const isCurrentUserSuperAdmin = () => Boolean(appStore.currentUser && (ap
 
 export const canViewModule = (moduleSlug, user = appStore.currentUser) => {
   if (!user) return false;
-  if (user.isSuperAdmin || user.superAdmin) return true;
+  if (user.isSuperAdmin || user.superAdmin || user.role?.toLowerCase() === "admin") return true;
 
   // Check structured modulePermissions object
   if (user.modulePermissions && user.modulePermissions[moduleSlug] !== undefined) {

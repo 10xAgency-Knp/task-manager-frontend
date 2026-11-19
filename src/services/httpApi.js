@@ -276,7 +276,7 @@ export async function fetchWorkspaceData() {
   }
 
   const transformedUser = transformUserFromApi(rawUser, userPerms);
-  const isSuper = Boolean(transformedUser?.isSuperAdmin || transformedUser?.superAdmin);
+  const isSuper = Boolean(transformedUser?.isSuperAdmin || transformedUser?.superAdmin || transformedUser?.role?.toLowerCase() === "admin");
 
   // Check granular permissions before hitting endpoints to avoid 403 Forbidden errors
   const canViewAllTasks = isSuper || canViewModule("all_tasks", transformedUser);

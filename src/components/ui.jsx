@@ -440,7 +440,7 @@ export function TaskStatusSelectCell({ task, t }) {
     <select
       className="i"
       data-st={resolvedTask.id}
-      style={{ padding: "5px 8px", fontSize: 12, width: "auto" }}
+      style={{ padding: "5px 24px 5px 8px", backgroundPosition: "right 6px center", backgroundSize: "12px 12px", fontSize: 12, width: "auto" }}
       value={selectedStatus || resolvedTask.status}
       disabled={isBusy}
       onClick={event => event.stopPropagation()}

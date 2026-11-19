@@ -8,6 +8,7 @@ import { Icon } from "../../components/Icon.jsx";
 import { CONFIG } from "../../services/api.js";
 import { useAppStore } from "../../store/appStore.js";
 import { navigateToView, navBack } from "../../routes/navigation.js";
+import { useInShell } from "../../layouts/ShellContext.js";
 
 export function ErrorFrame({
   statusCode = 404,
@@ -24,7 +25,10 @@ export function ErrorFrame({
   id
 }) {
   const store = useAppStore();
-  const showStandalone = isStandalone ?? (!store?.currentUser);
+  const inShell = useInShell();
+  const showStandalone = typeof isStandalone === "boolean"
+    ? isStandalone
+    : (!inShell && !store?.currentUser);
 
   const defaultPrimary = {
     label: "Go to Dashboard",

@@ -10,6 +10,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { Outlet, useBlocker, useLocation, useMatches, useNavigationType, useParams } from "react-router-dom";
+import { ShellContext } from "./ShellContext.js";
 import {
   appStore,
   setStoreState,
@@ -225,6 +226,9 @@ export function Shell() {
       (focused.type === "task" ? "Task" : focused.type === "project" ? "Project" : "Member");
     pageSubtitle =
       appStore.pageHeader?.subtitle || (focused.type === "task" ? String(focused.id) : "");
+  } else if (appStore.pageHeader) {
+    pageTitle = appStore.pageHeader.title;
+    pageSubtitle = appStore.pageHeader.subtitle || "";
   } else if (appStore.isNotFound) {
     pageTitle = "Page not found";
     pageSubtitle = "";
@@ -256,11 +260,16 @@ export function Shell() {
   };
 
   if (!appStore.currentUser) {
-    return <Outlet />;
+    return (
+      <ShellContext.Provider value={false}>
+        <Outlet />
+      </ShellContext.Provider>
+    );
   }
 
   return (
-    <div className="app">
+    <ShellContext.Provider value={true}>
+      <div className="app">
       {/* Navigation Sidebar */}
       <aside
         className={
@@ -413,14 +422,16 @@ export function Shell() {
           <div className="top-actions">
             <GlobalSearch />
 
-            <button
-              className="btn btn-primary btn-sm"
-              id="topNewTask"
-              onClick={handleCreateNewTask}
-            >
-              <Icon name="plus" />
-              <span className="hide-sm"> Create Task</span>
-            </button>
+            {can.createTask() ? (
+              <button
+                className="btn btn-primary btn-sm"
+                id="topNewTask"
+                onClick={handleCreateNewTask}
+              >
+                <Icon name="plus" />
+                <span className="hide-sm"> Create Task</span>
+              </button>
+            ) : null}
 
             <button
               className={
@@ -464,6 +475,7 @@ export function Shell() {
       {appStore.isNotificationPanelOpen ? <NotificationPanelDrawer /> : null}
       <NotificationPopupsContainer />
     </div>
+    </ShellContext.Provider>
   );
 }
 

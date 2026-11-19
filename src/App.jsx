@@ -45,7 +45,16 @@ export default function App() {
 
   let activeScreenElement;
 
-  if ((store.currentScreen === "app" && store.currentUser) || isDirectErrorPath) {
+  if (store.currentScreen === "boot") {
+    activeScreenElement = (
+      <div className="loader">
+        <div className="spinner" />
+        <div>Loading 10X Agency CRM...</div>
+      </div>
+    );
+  } else if (store.currentScreen === "app" && store.currentUser) {
+    activeScreenElement = <Outlet />;
+  } else if (isDirectErrorPath) {
     activeScreenElement = <Outlet />;
   } else if (AUTHENTICATION_SCREENS[store.currentScreen]) {
     const ScreenComponent = AUTHENTICATION_SCREENS[store.currentScreen];
